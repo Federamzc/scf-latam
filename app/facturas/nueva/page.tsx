@@ -20,13 +20,6 @@ export default function NuevaFactura() {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) throw new Error('No autenticado')
 
-      const filename = `${user.id}/${Date.now()}-${file.name}`
-      const { error: uploadError } = await supabase.storage
-        .from('facturas')
-        .upload(filename, file)
-
-      if (uploadError) throw uploadError
-
       const texto = await file.text()
 
       const response = await fetch('/api/extraer-factura', {
@@ -34,6 +27,8 @@ export default function NuevaFactura() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ contenido: texto, tipo: file.type, nombre: file.name })
       })
+
+      if (!response.ok) throw new Error('Error al procesar con IA')
 
       const datosExtraidos = await response.json()
 
@@ -48,12 +43,11 @@ export default function NuevaFactura() {
         fecha_vencimiento: datosExtraidos.fecha_vencimiento,
         pais: datosExtraidos.pais,
         tipo_archivo: file.type,
-        archivo_url: filename,
         datos_extraidos: datosExtraidos,
         estado: 'PENDIENTE'
       })
 
-      if (dbError) throw dbError
+      if (dbError) throw new Error(dbError.message)
 
       setDatos(datosExtraidos)
       setSuccess(true)
@@ -72,14 +66,14 @@ export default function NuevaFactura() {
             <div className="text-center mb-6">
               <div className="text-5xl mb-3">✅</div>
               <h2 className="text-2xl font-bold text-white">Factura cargada</h2>
-              <p className="text-slate-400 mt-1">Los datos fueron extraídos automáticamente</p>
+              <p className="text-slate-400 mt-1">Datos extraídos automáticamente con IA</p>
             </div>
             <div className="space-y-3">
               {[
                 { label: 'N° Factura', value: datos.numero_factura },
                 { label: 'Emisor', value: datos.emisor },
                 { label: 'Receptor', value: datos.receptor },
-                { label: 'Monto', value: `${datos.moneda} ${datos.monto?.toLocaleString()}` },
+                { label: 'Monto', value: `${datos.moneda} ${Number(datos.monto)?.toLocaleString()}` },
                 { label: 'Fecha emisión', value: datos.fecha_emision },
                 { label: 'Vencimiento', value: datos.fecha_vencimiento },
                 { label: 'País', value: datos.pais },
@@ -113,7 +107,7 @@ export default function NuevaFactura() {
             ← Volver al dashboard
           </Link>
           <h1 className="text-3xl font-bold text-white mt-4">Cargar factura</h1>
-          <p className="text-slate-400 mt-2">Soportamos XML, PDF y JSON de México y Costa Rica</p>
+          <p className="text-slate-400 mt-2">XML, PDF o JSON — México y Costa Rica</p>
         </div>
         <form onSubmit={handleUpload} className="bg-slate-900 border border-slate-800 rounded-2xl p-8 space-y-6">
           {error && (
@@ -141,8 +135,8 @@ export default function NuevaFactura() {
             ) : (
               <div>
                 <div className="text-4xl mb-3">📤</div>
-                <p className="text-white font-medium">Arrastrá o hacé clic para subir</p>
-                <p className="text-slate-400 text-sm mt-2">XML, PDF o JSON — México (CFDI) y Costa Rica (Hacienda)</p>
+                <p className="text-white font-medium">Hacé clic para subir</p>
+                <p className="text-slate-400 text-sm mt-2">XML, PDF o JSON</p>
               </div>
             )}
           </div>
