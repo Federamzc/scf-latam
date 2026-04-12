@@ -33,20 +33,31 @@ export default function RegisterPage() {
           <p className="text-slate-400 mt-2">Comenzá a usar SCF Latam hoy</p>
         </div>
         <form onSubmit={handleRegister} className="bg-slate-900 border border-slate-800 rounded-2xl p-8 space-y-5">
-          {error && <div className="bg-red-500/10 border border-red-500/30 text-red-400 rounded-lg px-4 py-3 text-sm">{error}</div>}
+          {error && (
+            <div className="bg-red-500/10 border border-red-500/30 text-red-400 rounded-lg px-4 py-3 text-sm">{error}</div>
+          )}
           <div>
             <label className="block text-slate-300 text-sm font-medium mb-3">Tipo de cuenta</label>
             <div className="grid grid-cols-2 gap-3">
               {['CORPORATIVO', 'PROVEEDOR'].map(role => (
                 <button key={role} type="button" onClick={() => setForm(f => ({ ...f, role }))}
-                  className={`py-3 px-4 rounded-lg border text-sm font-semibold transition-all ${form.role === role ? 'bg-blue-600 border-blue-500 text-white' : 'bg-slate-800 border-slate-700 text-slate-400'}`}>
+                  className={`py-3 px-4 rounded-lg border text-sm font-semibold transition-all ${
+                    form.role === role
+                      ? 'bg-blue-600 border-blue-500 text-white'
+                      : 'bg-slate-800 border-slate-700 text-slate-400 hover:border-slate-500'
+                  }`}>
                   {role === 'CORPORATIVO' ? '🏢 Corporativo' : '🏭 Proveedor'}
                 </button>
               ))}
             </div>
+            <p className="text-slate-500 text-xs mt-2">
+              {form.role === 'CORPORATIVO'
+                ? 'Administrá tu red de proveedores y aprobá solicitudes'
+                : 'Accedé a financiamiento anticipado de tus facturas'}
+            </p>
           </div>
           <div>
-            <label className="block text-slate-300 text-sm font-medium mb-2">Empresa</label>
+            <label className="block text-slate-300 text-sm font-medium mb-2">Nombre de empresa</label>
             <input type="text" required value={form.company_name} onChange={e => setForm(f => ({ ...f, company_name: e.target.value }))}
               className="w-full bg-slate-800 border border-slate-700 rounded-lg px-4 py-3 text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 transition-colors"
               placeholder="Mi Empresa S.A." />
