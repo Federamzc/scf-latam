@@ -7,11 +7,12 @@ export const supabase = createClient(supabaseUrl, supabaseKey, {
   auth: {
     persistSession: true,
     autoRefreshToken: true,
+    storageKey: 'scf-auth',
   },
   global: {
     headers: {
-      'Accept': 'application/json',
-      'Content-Type': 'application/json',
+      'apikey': supabaseKey,
+      'Authorization': `Bearer ${supabaseKey}`,
     }
   }
 })
