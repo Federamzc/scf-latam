@@ -3,6 +3,32 @@ import { useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabase'
 import Link from 'next/link'
 
+const S = {
+  page: { minHeight: '100vh', background: '#000', fontFamily: "'DM Sans', sans-serif", color: '#fff' },
+  header: { borderBottom: '1px solid #1A1A1A', background: '#000', position: 'sticky' as const, top: 0, zIndex: 100 },
+  headerInner: { maxWidth: 1200, margin: '0 auto', padding: '0 40px', height: 64, display: 'flex', alignItems: 'center', justifyContent: 'space-between' },
+  logo: { display: 'flex', alignItems: 'center', gap: 12 },
+  logoBox: { width: 32, height: 32, border: '1.5px solid #fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: "'Syne', sans-serif", fontWeight: 800, fontSize: 13 },
+  logoName: { fontFamily: "'Syne', sans-serif", fontWeight: 700, fontSize: 13, letterSpacing: 3, textTransform: 'uppercase' as const },
+  nav: { display: 'flex', alignItems: 'center', gap: 32 },
+  navLink: { fontSize: 11, color: '#606060', textDecoration: 'none', letterSpacing: 1.5, textTransform: 'uppercase' as const },
+  main: { maxWidth: 1200, margin: '0 auto', padding: '60px 40px' },
+  overline: { fontSize: 11, letterSpacing: 3, textTransform: 'uppercase' as const, color: '#606060', marginBottom: 12 },
+  h1: { fontFamily: "'Syne', sans-serif", fontSize: 32, fontWeight: 700, letterSpacing: -1, marginBottom: 48 },
+  grid4: { display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 1, border: '1px solid #1A1A1A', marginBottom: 48 },
+  stat: { padding: '32px 28px', borderRight: '1px solid #1A1A1A', background: '#000' },
+  statVal: { fontFamily: "'Syne', sans-serif", fontSize: 32, fontWeight: 700, letterSpacing: -1, marginBottom: 6 },
+  statLbl: { fontSize: 11, color: '#606060', letterSpacing: 1, textTransform: 'uppercase' as const },
+  grid2: { display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 1, marginBottom: 48 },
+  card: { padding: '36px 32px', border: '1px solid #1A1A1A', background: '#000', textDecoration: 'none', color: '#fff', display: 'block' },
+  cardNum: { fontSize: 11, color: '#404040', letterSpacing: 2, textTransform: 'uppercase' as const, marginBottom: 16, fontFamily: "'Syne', sans-serif" },
+  cardTitle: { fontFamily: "'Syne', sans-serif", fontSize: 20, fontWeight: 700, letterSpacing: -0.5, marginBottom: 8 },
+  cardDesc: { fontSize: 13, color: '#606060', lineHeight: 1.7 },
+  table: { width: '100%', borderCollapse: 'collapse' as const },
+  th: { fontSize: 11, letterSpacing: 1.5, textTransform: 'uppercase' as const, color: '#404040', textAlign: 'left' as const, padding: '12px 0', borderBottom: '1px solid #1A1A1A' },
+  td: { padding: '16px 0', borderBottom: '1px solid #0D0D0D', fontSize: 14, color: '#B8B8B8', verticalAlign: 'top' as const },
+}
+
 export default function DashboardPage() {
   const [profile, setProfile] = useState<any>(null)
   const [facturas, setFacturas] = useState<any[]>([])
@@ -27,121 +53,128 @@ export default function DashboardPage() {
   }
 
   if (loading) return (
-    <div className="min-h-screen bg-slate-950 flex items-center justify-center">
-      <p className="text-white text-lg">Cargando...</p>
+    <div style={{ ...S.page, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+      <p style={{ fontSize: 11, letterSpacing: 3, textTransform: 'uppercase', color: '#404040' }}>Loading...</p>
     </div>
   )
 
   const isCorporativo = profile?.role === 'CORPORATIVO'
+  const isBanco = profile?.role === 'BANCO'
   const totalMonto = facturas.reduce((sum, f) => sum + (Number(f.monto) || 0), 0)
   const pendientes = facturas.filter(f => f.estado === 'PENDIENTE').length
   const aprobadas = facturas.filter(f => f.estado === 'APROBADA').length
 
-  const stats = isCorporativo ? [
-    { label: 'Facturas pendientes', value: pendientes.toString(), icon: '📄' },
-    { label: 'Facturas aprobadas', value: aprobadas.toString(), icon: '✅' },
-    { label: 'Monto total', value: `$${totalMonto.toLocaleString()}`, icon: '💰' },
-    { label: 'Total facturas', value: facturas.length.toString(), icon: '📊' },
+  const stats = isBanco ? [
+    { val: facturas.length.toString(), lbl: 'Total applications' },
+    { val: pendientes.toString(), lbl: 'Pending review' },
+    { val: aprobadas.toString(), lbl: 'Approved' },
+    { val: `$${(totalMonto/1000).toFixed(0)}K`, lbl: 'Volume' },
+  ] : isCorporativo ? [
+    { val: pendientes.toString(), lbl: 'Pending invoices' },
+    { val: aprobadas.toString(), lbl: 'Approved' },
+    { val: `$${(totalMonto/1000).toFixed(0)}K`, lbl: 'Total volume' },
+    { val: facturas.length.toString(), lbl: 'Total invoices' },
   ] : [
-    { label: 'Facturas cargadas', value: facturas.length.toString(), icon: '📄' },
-    { label: 'Pendientes', value: pendientes.toString(), icon: '⏳' },
-    { label: 'Aprobadas', value: aprobadas.toString(), icon: '✅' },
-    { label: 'Monto total', value: `$${totalMonto.toLocaleString()}`, icon: '💵' },
+    { val: facturas.length.toString(), lbl: 'Invoices uploaded' },
+    { val: pendientes.toString(), lbl: 'Pending' },
+    { val: aprobadas.toString(), lbl: 'Approved' },
+    { val: `$${(totalMonto/1000).toFixed(0)}K`, lbl: 'Total amount' },
+  ]
+
+  const modules = isBanco ? [
+    { num: '01', title: 'Decision Engine', desc: 'Review and approve credit applications with full scoring breakdown.', href: '/banco' },
+    { num: '02', title: 'Scoring Engine', desc: 'Evaluate new credit applications in real time.', href: '/scoring' },
+  ] : isCorporativo ? [
+    { num: '01', title: 'Invoice Pipeline', desc: 'Review and approve supplier invoices for financing.', href: '/facturas' },
+    { num: '02', title: 'Scoring Engine', desc: 'Evaluate credit applications for your supplier network.', href: '/scoring' },
+  ] : [
+    { num: '01', title: 'Upload Invoice', desc: 'Submit a new invoice for financing. AI extracts data automatically.', href: '/facturas/nueva' },
+    { num: '02', title: 'My Invoices', desc: 'Track the status of all your financing requests.', href: '/facturas' },
   ]
 
   return (
-    <div className="min-h-screen bg-slate-950">
-      <header className="border-b border-slate-800 bg-slate-900">
-        <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className={`w-8 h-8 ${isCorporativo ? 'bg-blue-600' : 'bg-emerald-600'} rounded-lg flex items-center justify-center`}>
-              {isCorporativo ? '🏢' : '🏭'}
-            </div>
-            <div>
-              <p className="text-white font-semibold text-sm">{profile?.company_name}</p>
-              <span className={`text-xs px-2 py-0.5 rounded-full ${isCorporativo ? 'bg-blue-500/20 text-blue-300' : 'bg-emerald-500/20 text-emerald-300'}`}>
-                {profile?.role}
-              </span>
-            </div>
+    <div style={S.page}>
+      <style>{`@import url('https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@300;400;500&display=swap');`}</style>
+
+      <header style={S.header}>
+        <div style={S.headerInner}>
+          <div style={S.logo}>
+            <div style={S.logoBox}>SK</div>
+            <span style={S.logoName}>Supply Chain</span>
           </div>
-          <button onClick={handleLogout} className="text-slate-400 hover:text-white text-sm transition-colors">
-            Cerrar sesión →
-          </button>
+          <nav style={S.nav}>
+            <span style={{ fontSize: 11, color: '#404040', letterSpacing: 1 }}>{profile?.company_name}</span>
+            <span style={{ fontSize: 11, letterSpacing: 1.5, border: '1px solid #272727', color: '#606060', padding: '4px 10px', textTransform: 'uppercase' }}>{profile?.role}</span>
+            <button onClick={handleLogout} style={{ fontSize: 11, color: '#606060', letterSpacing: 1.5, textTransform: 'uppercase', background: 'none', border: 'none', cursor: 'pointer', fontFamily: "'DM Sans', sans-serif" }}>Sign out</button>
+          </nav>
         </div>
       </header>
 
-      <main className="max-w-7xl mx-auto px-6 py-10">
-        <div className="mb-8">
-          <h1 className="text-2xl font-bold text-white">
-            {isCorporativo ? 'Dashboard Corporativo' : 'Dashboard Proveedor'}
-          </h1>
-          <p className="text-slate-400 mt-1">Bienvenido, {profile?.company_name}</p>
-        </div>
+      <main style={S.main}>
+        <div style={S.overline}>Dashboard</div>
+        <h1 style={S.h1}>
+          {isBanco ? 'Bank Portal' : isCorporativo ? 'Corporate Hub' : 'Supplier Portal'}
+        </h1>
 
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-10">
-          {stats.map(stat => (
-            <div key={stat.label} className="bg-slate-900 border border-slate-800 rounded-xl p-5">
-              <div className="text-2xl mb-2">{stat.icon}</div>
-              <p className="text-2xl font-bold text-white">{stat.value}</p>
-              <p className="text-slate-400 text-sm mt-1">{stat.label}</p>
+        {/* Stats */}
+        <div style={S.grid4}>
+          {stats.map((s, i) => (
+            <div key={s.lbl} style={{ ...S.stat, borderRight: i < 3 ? '1px solid #1A1A1A' : 'none' }}>
+              <div style={S.statVal}>{s.val}</div>
+              <div style={S.statLbl}>{s.lbl}</div>
             </div>
           ))}
         </div>
 
-        <div className={`grid ${isCorporativo ? 'md:grid-cols-2' : 'md:grid-cols-2'} gap-4 mb-10`}>
-          {!isCorporativo && (
-            <Link href="/facturas/nueva"
-              className="bg-slate-900 border border-slate-800 rounded-xl p-6 hover:border-blue-500/50 transition-colors block">
-              <div className="text-3xl mb-3">📤</div>
-              <h3 className="text-white font-semibold">Cargar factura</h3>
-              <p className="text-slate-400 text-sm mt-1">Subí una nueva factura para financiar</p>
-              <span className="inline-block mt-3 text-xs text-blue-400 bg-blue-500/10 px-2 py-1 rounded">Abrir →</span>
+        {/* Modules */}
+        <div style={{ ...S.grid2, gridTemplateColumns: modules.length === 2 ? '1fr 1fr' : '1fr 1fr' }}>
+          {modules.map(m => (
+            <Link key={m.num} href={m.href} style={S.card}>
+              <div style={S.cardNum}>{m.num} —</div>
+              <div style={S.cardTitle}>{m.title}</div>
+              <div style={S.cardDesc}>{m.desc}</div>
+              <div style={{ marginTop: 24, fontSize: 11, color: '#404040', letterSpacing: 1.5, textTransform: 'uppercase' }}>Open →</div>
             </Link>
-          )}
-          <Link href="/facturas"
-            className="bg-slate-900 border border-slate-800 rounded-xl p-6 hover:border-blue-500/50 transition-colors block">
-            <div className="text-3xl mb-3">🗂️</div>
-            <h3 className="text-white font-semibold">{isCorporativo ? 'Ver facturas' : 'Mis facturas'}</h3>
-            <p className="text-slate-400 text-sm mt-1">{isCorporativo ? 'Revisá y aprobá solicitudes' : 'Estado de tus solicitudes'}</p>
-            <span className="inline-block mt-3 text-xs text-blue-400 bg-blue-500/10 px-2 py-1 rounded">Abrir →</span>
-          </Link>
+          ))}
         </div>
 
-        <div className="bg-slate-900 border border-slate-800 rounded-xl overflow-hidden">
-          <div className="px-6 py-4 border-b border-slate-800 flex items-center justify-between">
-            <h2 className="text-white font-semibold">Facturas recientes</h2>
-            <Link href="/facturas" className="text-blue-400 hover:text-blue-300 text-sm">Ver todas →</Link>
+        {/* Recent invoices */}
+        <div style={{ borderTop: '1px solid #1A1A1A', paddingTop: 40 }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 24 }}>
+            <div style={S.overline}>Recent activity</div>
+            <Link href="/facturas" style={{ fontSize: 11, color: '#404040', letterSpacing: 1.5, textTransform: 'uppercase', textDecoration: 'none' }}>View all →</Link>
           </div>
+
           {facturas.length === 0 ? (
-            <div className="py-16 text-center">
-              <p className="text-4xl mb-3">📄</p>
-              <p className="text-slate-400">No hay facturas aún</p>
-              {!isCorporativo && (
-                <Link href="/facturas/nueva" className="inline-block mt-4 bg-blue-600 hover:bg-blue-500 text-white font-semibold px-6 py-2 rounded-lg text-sm">
-                  Cargar primera factura
-                </Link>
+            <div style={{ padding: '60px 0', textAlign: 'center' }}>
+              <p style={{ fontSize: 13, color: '#404040' }}>No activity yet.</p>
+              {!isBanco && !isCorporativo && (
+                <Link href="/facturas/nueva" style={{ display: 'inline-block', marginTop: 16, fontSize: 11, letterSpacing: 2, textTransform: 'uppercase', color: '#fff', border: '1px solid #404040', padding: '10px 24px', textDecoration: 'none' }}>Upload first invoice</Link>
               )}
             </div>
           ) : (
-            <div className="divide-y divide-slate-800">
-              {facturas.map(f => (
-                <div key={f.id} className="px-6 py-4 flex items-center justify-between">
-                  <div>
-                    <p className="text-white font-medium text-sm">{f.numero_factura}</p>
-                    <p className="text-slate-400 text-xs mt-1">{f.emisor} → {f.receptor}</p>
-                  </div>
-                  <div className="text-right">
-                    <p className="text-white font-semibold text-sm">{f.moneda} {Number(f.monto).toLocaleString()}</p>
-                    <span className={`text-xs px-2 py-0.5 rounded-full mt-1 inline-block ${
-                      f.estado === 'PENDIENTE' ? 'bg-amber-500/20 text-amber-300' :
-                      f.estado === 'APROBADA' ? 'bg-emerald-500/20 text-emerald-300' :
-                      f.estado === 'RECHAZADA' ? 'bg-red-500/20 text-red-300' :
-                      'bg-blue-500/20 text-blue-300'
-                    }`}>{f.estado}</span>
-                  </div>
-                </div>
-              ))}
-            </div>
+            <table style={S.table}>
+              <thead>
+                <tr>
+                  <th style={S.th}>Invoice</th>
+                  <th style={S.th}>Issuer</th>
+                  <th style={S.th}>Amount</th>
+                  <th style={S.th}>Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                {facturas.map(f => (
+                  <tr key={f.id}>
+                    <td style={{ ...S.td, color: '#fff', fontFamily: "'Syne', sans-serif" }}>{f.numero_factura}</td>
+                    <td style={S.td}>{f.emisor}</td>
+                    <td style={{ ...S.td, fontFamily: 'monospace' }}>{f.moneda} {Number(f.monto).toLocaleString()}</td>
+                    <td style={S.td}>
+                      <span style={{ fontSize: 10, letterSpacing: 1.5, textTransform: 'uppercase', color: f.estado === 'PENDIENTE' ? '#606060' : f.estado === 'APROBADA' ? '#B8B8B8' : '#404040', border: '1px solid #272727', padding: '3px 8px' }}>{f.estado}</span>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           )}
         </div>
       </main>
