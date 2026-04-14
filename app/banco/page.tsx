@@ -3,6 +3,19 @@ import { useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabase'
 import Link from 'next/link'
 
+const SK = {
+  page: { minHeight: '100vh', background: '#000', fontFamily: "'DM Sans', sans-serif", color: '#fff' },
+  header: { borderBottom: '1px solid #1A1A1A', background: '#000', position: 'sticky' as const, top: 0, zIndex: 100 },
+  headerInner: { maxWidth: 1200, margin: '0 auto', padding: '0 40px', height: 64, display: 'flex', alignItems: 'center', justifyContent: 'space-between' },
+  logoBox: { width: 32, height: 32, border: '1.5px solid #fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: "'Syne', sans-serif", fontWeight: 800, fontSize: 13 },
+  main: { maxWidth: 1200, margin: '0 auto', padding: '60px 40px' },
+  overline: { fontSize: 11, letterSpacing: 3, textTransform: 'uppercase' as const, color: '#606060', marginBottom: 12 },
+  h1: { fontFamily: "'Syne', sans-serif", fontSize: 32, fontWeight: 700, letterSpacing: -1, marginBottom: 8, color: '#fff' },
+  card: { border: '1px solid #1A1A1A', padding: '32px', background: '#000' },
+  label: { display: 'block', fontSize: 11, letterSpacing: 1.5, textTransform: 'uppercase' as const, color: '#606060', marginBottom: 8 },
+  input: { width: '100%', background: '#0D0D0D', border: '1px solid #272727', color: '#fff', padding: '12px 16px', fontSize: 14, outline: 'none', fontFamily: "'DM Sans', sans-serif" },
+}
+
 export default function BancoPage() {
   const [applications, setApplications] = useState<any[]>([])
   const [selected, setSelected] = useState<any>(null)
@@ -14,19 +27,13 @@ export default function BancoPage() {
   useEffect(() => { loadData() }, [])
 
   async function loadData() {
-    const { data: apps } = await supabase
-      .from('credit_applications')
-      .select('*, scoring_results(*), bank_decisions(*)')
-      .order('created_at', { ascending: false })
-
+    const { data: apps } = await supabase.from('credit_applications').select('*, scoring_results(*), bank_decisions(*)').order('created_at', { ascending: false })
     const list = apps || []
     setApplications(list)
-
-    const approved = list.filter(a => a.bank_decisions?.length > 0 && a.bank_decisions[0].decision === 'APPROVED')
-    const rejected = list.filter(a => a.bank_decisions?.length > 0 && a.bank_decisions[0].decision === 'REJECTED')
-    const pending = list.filter(a => !a.bank_decisions?.length)
+    const approved = list.filter((a: any) => a.bank_decisions?.length > 0 && a.bank_decisions[0].decision === 'APPROVED')
+    const rejected = list.filter((a: any) => a.bank_decisions?.length > 0 && a.bank_decisions[0].decision === 'REJECTED')
+    const pending = list.filter((a: any) => !a.bank_decisions?.length)
     const volume = approved.reduce((sum: number, a: any) => sum + (a.bank_decisions[0].approved_amount || 0), 0)
-
     setStats({ total: list.length, approved: approved.length, rejected: rejected.length, pending: pending.length, volume })
     setLoading(false)
   }
@@ -34,173 +41,150 @@ export default function BancoPage() {
   async function handleDecision(dec: string) {
     if (!selected) return
     setSubmitting(true)
-
     const { data: { user } } = await supabase.auth.getUser()
-
     await supabase.from('bank_decisions').insert({
-      application_id: selected.id,
-      bank_user_id: user?.id,
-      decision: dec,
+      application_id: selected.id, bank_user_id: user?.id, decision: dec,
       approved_amount: dec === 'APPROVED' ? Number(decision.approved_amount) || selected.requested_amount : null,
       interest_rate: Number(decision.interest_rate) || null,
       term_months: Number(decision.term_months) || null,
       notes: decision.notes || null
     })
-
     if (dec === 'APPROVED') {
       await supabase.from('credit_lines').insert({
-        company_id: selected.applicant_id,
-        application_id: selected.id,
+        company_id: selected.applicant_id, application_id: selected.id,
         total_limit: Number(decision.approved_amount) || selected.requested_amount,
         available_limit: Number(decision.approved_amount) || selected.requested_amount,
         interest_rate: Number(decision.interest_rate) || null,
         term_months: Number(decision.term_months) || null
       })
     }
-
-    await supabase.from('credit_applications').update({
-      status: dec === 'APPROVED' ? 'APPROVED' : 'REJECTED'
-    }).eq('id', selected.id)
-
+    await supabase.from('credit_applications').update({ status: dec === 'APPROVED' ? 'APPROVED' : 'REJECTED' }).eq('id', selected.id)
     setSelected(null)
     setDecision({ approved_amount: '', interest_rate: '', term_months: '', notes: '' })
     await loadData()
     setSubmitting(false)
   }
 
-  const getScoreColor = (score: number) =>
-    score >= 70 ? '#10b981' : score >= 45 ? '#f59e0b' : '#ef4444'
+  const getScoreColor = (score: number) => score >= 70 ? '#fff' : score >= 45 ? '#909090' : '#404040'
 
   const getStatusBadge = (app: any) => {
-    if (!app.bank_decisions?.length) return { label: 'PENDIENTE', color: '#f59e0b', bg: '#f59e0b20' }
+    if (!app.bank_decisions?.length) return { label: 'PENDIENTE', color: '#606060' }
     const dec = app.bank_decisions[0].decision
-    if (dec === 'APPROVED') return { label: 'APROBADO', color: '#10b981', bg: '#10b98120' }
-    if (dec === 'REJECTED') return { label: 'RECHAZADO', color: '#ef4444', bg: '#ef444420' }
-    return { label: 'MÁS INFO', color: '#3b82f6', bg: '#3b82f620' }
+    if (dec === 'APPROVED') return { label: 'APROBADO', color: '#B8B8B8' }
+    if (dec === 'REJECTED') return { label: 'RECHAZADO', color: '#404040' }
+    return { label: 'MÁS INFO', color: '#606060' }
   }
 
   if (loading) return (
-    <div className="min-h-screen bg-slate-950 flex items-center justify-center">
-      <p className="text-white">Cargando portal...</p>
+    <div style={{ ...SK.page, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+      <div style={{ fontSize: 11, letterSpacing: 3, textTransform: 'uppercase', color: '#404040' }}>Cargando...</div>
     </div>
   )
 
   return (
-    <div className="min-h-screen bg-slate-950">
-      <header className="border-b border-slate-800 bg-slate-900">
-        <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="w-8 h-8 bg-purple-600 rounded-lg flex items-center justify-center text-sm">🏦</div>
-            <div>
-              <p className="text-white font-semibold text-sm">Portal Banco</p>
-              <span className="text-xs bg-purple-500/20 text-purple-300 px-2 py-0.5 rounded-full">DECISION ENGINE</span>
-            </div>
+    <div style={SK.page}>
+      <style>{`@import url('https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@300;400;500&display=swap');`}</style>
+
+      <header style={SK.header}>
+        <div style={SK.headerInner}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+            <div style={SK.logoBox}>SK</div>
+            <span style={{ fontFamily: "'Syne', sans-serif", fontWeight: 700, fontSize: 13, letterSpacing: 3, textTransform: 'uppercase' }}>Portal Banco</span>
           </div>
-          <div className="flex items-center gap-4">
-            <Link href="/scoring" className="text-slate-400 hover:text-white text-sm transition-colors">Scoring →</Link>
-            <Link href="/dashboard" className="text-slate-400 hover:text-white text-sm transition-colors">Dashboard →</Link>
+          <div style={{ display: 'flex', gap: 24 }}>
+            <Link href="/scoring" style={{ fontSize: 11, color: '#606060', textDecoration: 'none', letterSpacing: 1.5, textTransform: 'uppercase' }}>Scoring</Link>
+            <Link href="/dashboard" style={{ fontSize: 11, color: '#606060', textDecoration: 'none', letterSpacing: 1.5, textTransform: 'uppercase' }}>Dashboard</Link>
           </div>
         </div>
       </header>
 
-      <main className="max-w-7xl mx-auto px-6 py-8">
+      <main style={SK.main}>
+        <div style={SK.overline}>Sprint 2 — Decision Engine</div>
+        <h1 style={SK.h1}>Portal de decisiones</h1>
+        <p style={{ fontSize: 14, color: '#606060', marginBottom: 48 }}>Revisá solicitudes, analizá el score y tomá decisiones de crédito</p>
 
         {/* Stats */}
-        <div className="grid grid-cols-2 lg:grid-cols-5 gap-4 mb-8">
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 1, border: '1px solid #1A1A1A', marginBottom: 48 }}>
           {[
-            { label: 'Total solicitudes', value: stats.total, icon: '📋' },
-            { label: 'Pendientes', value: stats.pending, icon: '⏳' },
-            { label: 'Aprobadas', value: stats.approved, icon: '✅' },
-            { label: 'Rechazadas', value: stats.rejected, icon: '❌' },
-            { label: 'Volumen aprobado', value: `$${(stats.volume/1000).toFixed(0)}K`, icon: '💰' },
-          ].map(s => (
-            <div key={s.label} className="bg-slate-900 border border-slate-800 rounded-xl p-4">
-              <div className="text-xl mb-1">{s.icon}</div>
-              <p className="text-xl font-bold text-white">{s.value}</p>
-              <p className="text-slate-400 text-xs mt-0.5">{s.label}</p>
+            { val: stats.total, lbl: 'Total' },
+            { val: stats.pending, lbl: 'Pendientes' },
+            { val: stats.approved, lbl: 'Aprobadas' },
+            { val: stats.rejected, lbl: 'Rechazadas' },
+            { val: `$${(stats.volume/1000).toFixed(0)}K`, lbl: 'Volumen' },
+          ].map((s, i) => (
+            <div key={s.lbl} style={{ padding: '28px 24px', borderRight: i < 4 ? '1px solid #1A1A1A' : 'none', background: '#000' }}>
+              <div style={{ fontFamily: "'Syne', sans-serif", fontSize: 28, fontWeight: 700, letterSpacing: -1, marginBottom: 6 }}>{s.val}</div>
+              <div style={{ fontSize: 11, color: '#606060', letterSpacing: 1, textTransform: 'uppercase' }}>{s.lbl}</div>
             </div>
           ))}
         </div>
 
-        <div className="grid lg:grid-cols-2 gap-8">
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 1 }}>
 
           {/* Pipeline */}
-          <div>
-            <h2 className="text-white font-semibold mb-4">Pipeline de solicitudes</h2>
-            <div className="space-y-3">
-              {applications.length === 0 && (
-                <div className="bg-slate-900 border border-slate-800 rounded-xl p-8 text-center">
-                  <p className="text-slate-400">No hay solicitudes aún</p>
-                  <Link href="/scoring" className="inline-block mt-3 text-blue-400 hover:text-blue-300 text-sm">
-                    Crear primera solicitud →
-                  </Link>
-                </div>
-              )}
-              {applications.map(app => {
-                const score = app.scoring_results?.[0]?.total_score
-                const badge = getStatusBadge(app)
-                const isSelected = selected?.id === app.id
-                return (
-                  <div key={app.id}
-                    onClick={() => !app.bank_decisions?.length && setSelected(isSelected ? null : app)}
-                    className={`bg-slate-900 border rounded-xl p-4 transition-all ${
-                      isSelected ? 'border-blue-500' :
-                      app.bank_decisions?.length ? 'border-slate-800 opacity-60' :
-                      'border-slate-800 hover:border-slate-600 cursor-pointer'
-                    }`}>
-                    <div className="flex items-start justify-between">
-                      <div className="flex-1">
-                        <div className="flex items-center gap-2 mb-1">
-                          <p className="text-white font-medium text-sm">{app.company_name}</p>
-                          <span className="text-xs px-2 py-0.5 rounded-full font-medium"
-                            style={{ backgroundColor: badge.bg, color: badge.color }}>
-                            {badge.label}
-                          </span>
-                        </div>
-                        <div className="flex items-center gap-4 text-xs text-slate-400">
-                          <span>RFC: {app.tax_id || 'N/A'}</span>
-                          <span>Solicita: ${Number(app.requested_amount).toLocaleString()}</span>
-                        </div>
-                      </div>
-                      {score !== undefined && (
-                        <div className="text-right ml-4">
-                          <p className="text-lg font-bold" style={{ color: getScoreColor(score) }}>{score}</p>
-                          <p className="text-xs text-slate-500">score</p>
-                        </div>
-                      )}
-                    </div>
-                    {score === undefined && (
-                      <p className="text-xs text-amber-400 mt-2">⚠ Sin score — ir a Scoring Engine primero</p>
-                    )}
-                  </div>
-                )
-              })}
-            </div>
-          </div>
+          <div style={{ ...SK.card, borderRight: 'none' }}>
+            <div style={{ fontSize: 11, letterSpacing: 2, textTransform: 'uppercase', color: '#404040', marginBottom: 24, fontFamily: "'Syne', sans-serif" }}>01 — Pipeline</div>
 
-          {/* Decision panel */}
-          <div>
-            <h2 className="text-white font-semibold mb-4">Panel de decisión</h2>
-            {!selected ? (
-              <div className="bg-slate-900 border border-slate-800 rounded-xl p-10 text-center">
-                <div className="text-5xl mb-3">🏦</div>
-                <p className="text-slate-400 text-sm">Seleccioná una solicitud pendiente para decidir</p>
+            {applications.length === 0 ? (
+              <div style={{ padding: '40px 0', textAlign: 'center' }}>
+                <p style={{ fontSize: 13, color: '#404040' }}>No hay solicitudes aún</p>
+                <Link href="/scoring" style={{ display: 'inline-block', marginTop: 16, fontSize: 11, letterSpacing: 1.5, textTransform: 'uppercase', color: '#606060', textDecoration: 'none', border: '1px solid #272727', padding: '10px 20px' }}>Crear solicitud →</Link>
               </div>
             ) : (
-              <div className="bg-slate-900 border border-blue-500/30 rounded-xl p-6 space-y-5">
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                {applications.map(app => {
+                  const score = app.scoring_results?.[0]?.total_score
+                  const badge = getStatusBadge(app)
+                  const isSelected = selected?.id === app.id
+                  const isPending = !app.bank_decisions?.length
+                  return (
+                    <div key={app.id}
+                      onClick={() => isPending && setSelected(isSelected ? null : app)}
+                      style={{ padding: '20px 0', borderBottom: '1px solid #0D0D0D', cursor: isPending ? 'pointer' : 'default', opacity: isPending ? 1 : 0.5, background: isSelected ? '#0D0D0D' : 'transparent', paddingLeft: isSelected ? 16 : 0, transition: 'all 0.2s' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                        <div>
+                          <p style={{ fontFamily: "'Syne', sans-serif", fontSize: 15, fontWeight: 700, marginBottom: 4 }}>{app.company_name}</p>
+                          <div style={{ display: 'flex', gap: 16, fontSize: 12, color: '#606060' }}>
+                            <span>{app.tax_id || 'Sin RFC'}</span>
+                            <span>${Number(app.requested_amount).toLocaleString()}</span>
+                          </div>
+                        </div>
+                        <div style={{ textAlign: 'right' }}>
+                          {score !== undefined && (
+                            <div style={{ fontFamily: "'Syne', sans-serif", fontSize: 20, fontWeight: 700, color: getScoreColor(score), marginBottom: 4 }}>{score}</div>
+                          )}
+                          <span style={{ fontSize: 10, letterSpacing: 1.5, textTransform: 'uppercase', color: badge.color, border: '1px solid #1A1A1A', padding: '2px 6px' }}>{badge.label}</span>
+                        </div>
+                      </div>
+                    </div>
+                  )
+                })}
+              </div>
+            )}
+          </div>
+
+          {/* Panel de decisión */}
+          <div style={SK.card}>
+            <div style={{ fontSize: 11, letterSpacing: 2, textTransform: 'uppercase', color: '#404040', marginBottom: 24, fontFamily: "'Syne', sans-serif" }}>02 — Decisión</div>
+
+            {!selected ? (
+              <div style={{ padding: '60px 0', textAlign: 'center' }}>
+                <div style={{ fontSize: 11, letterSpacing: 3, textTransform: 'uppercase', color: '#272727' }}>Seleccioná una solicitud pendiente</div>
+              </div>
+            ) : (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
                 <div>
-                  <h3 className="text-white font-semibold text-lg">{selected.company_name}</h3>
-                  <p className="text-slate-400 text-sm">{selected.tax_id}</p>
+                  <h3 style={{ fontFamily: "'Syne', sans-serif", fontSize: 20, fontWeight: 700, letterSpacing: -0.5, marginBottom: 4 }}>{selected.company_name}</h3>
+                  <p style={{ fontSize: 12, color: '#606060' }}>{selected.tax_id} · ${Number(selected.requested_amount).toLocaleString()} solicitados</p>
                 </div>
 
-                {/* Score breakdown */}
                 {selected.scoring_results?.[0] && (
-                  <div className="bg-slate-800 rounded-lg p-4 space-y-2">
-                    <div className="flex justify-between items-center mb-3">
-                      <p className="text-white text-sm font-medium">Score crediticio</p>
-                      <p className="text-2xl font-bold" style={{ color: getScoreColor(selected.scoring_results[0].total_score) }}>
+                  <div style={{ border: '1px solid #1A1A1A', padding: 24 }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
+                      <span style={{ fontSize: 11, letterSpacing: 2, textTransform: 'uppercase', color: '#404040' }}>Score crediticio</span>
+                      <span style={{ fontFamily: "'Syne', sans-serif", fontSize: 28, fontWeight: 700, color: getScoreColor(selected.scoring_results[0].total_score) }}>
                         {selected.scoring_results[0].total_score}/100
-                      </p>
+                      </span>
                     </div>
                     {[
                       { label: 'Ingresos vs monto', score: selected.scoring_results[0].revenue_score, max: 40 },
@@ -208,71 +192,53 @@ export default function BancoPage() {
                       { label: 'Historial pagos', score: selected.scoring_results[0].payment_history_score, max: 25 },
                       { label: 'Años operación', score: selected.scoring_results[0].seniority_score, max: 10 },
                     ].map(item => (
-                      <div key={item.label}>
-                        <div className="flex justify-between text-xs mb-1">
-                          <span className="text-slate-400">{item.label}</span>
-                          <span className="text-white">{item.score}/{item.max}</span>
+                      <div key={item.label} style={{ marginBottom: 12 }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11, marginBottom: 6 }}>
+                          <span style={{ color: '#606060', textTransform: 'uppercase', letterSpacing: 1 }}>{item.label}</span>
+                          <span style={{ fontFamily: 'monospace', color: '#fff' }}>{item.score}/{item.max}</span>
                         </div>
-                        <div className="w-full bg-slate-700 rounded-full h-1.5">
-                          <div className="h-1.5 rounded-full"
-                            style={{
-                              width: `${(item.score / item.max) * 100}%`,
-                              backgroundColor: getScoreColor(selected.scoring_results[0].total_score)
-                            }}
-                          />
+                        <div style={{ width: '100%', background: '#0D0D0D', height: 2 }}>
+                          <div style={{ height: 2, background: '#fff', width: `${(item.score / item.max) * 100}%` }} />
                         </div>
                       </div>
                     ))}
                   </div>
                 )}
 
-                {/* Decision form */}
-                <div className="space-y-3">
-                  <div className="grid grid-cols-2 gap-3">
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
                     <div>
-                      <label className="block text-slate-300 text-xs font-medium mb-1">Monto aprobado (USD)</label>
-                      <input type="number" value={decision.approved_amount}
-                        onChange={e => setDecision(d => ({ ...d, approved_amount: e.target.value }))}
-                        placeholder={selected.requested_amount}
-                        className="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-blue-500" />
+                      <label style={SK.label}>Monto aprobado (USD)</label>
+                      <input type="number" value={decision.approved_amount} onChange={e => setDecision(d => ({ ...d, approved_amount: e.target.value }))} placeholder={selected.requested_amount} style={SK.input} />
                     </div>
                     <div>
-                      <label className="block text-slate-300 text-xs font-medium mb-1">Tasa anual (%)</label>
-                      <input type="number" value={decision.interest_rate}
-                        onChange={e => setDecision(d => ({ ...d, interest_rate: e.target.value }))}
-                        placeholder="12.5"
-                        className="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-blue-500" />
+                      <label style={SK.label}>Tasa anual (%)</label>
+                      <input type="number" value={decision.interest_rate} onChange={e => setDecision(d => ({ ...d, interest_rate: e.target.value }))} placeholder="12.5" style={SK.input} />
                     </div>
                   </div>
                   <div>
-                    <label className="block text-slate-300 text-xs font-medium mb-1">Plazo (meses)</label>
-                    <input type="number" value={decision.term_months}
-                      onChange={e => setDecision(d => ({ ...d, term_months: e.target.value }))}
-                      placeholder="12"
-                      className="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-blue-500" />
+                    <label style={SK.label}>Plazo (meses)</label>
+                    <input type="number" value={decision.term_months} onChange={e => setDecision(d => ({ ...d, term_months: e.target.value }))} placeholder="12" style={SK.input} />
                   </div>
                   <div>
-                    <label className="block text-slate-300 text-xs font-medium mb-1">Notas internas</label>
-                    <textarea value={decision.notes}
-                      onChange={e => setDecision(d => ({ ...d, notes: e.target.value }))}
-                      placeholder="Observaciones del analista..."
-                      rows={2}
-                      className="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-blue-500 resize-none" />
+                    <label style={SK.label}>Notas internas</label>
+                    <textarea value={decision.notes} onChange={e => setDecision(d => ({ ...d, notes: e.target.value }))} placeholder="Observaciones del analista..." rows={3}
+                      style={{ ...SK.input, resize: 'none' }} />
                   </div>
                 </div>
 
-                <div className="grid grid-cols-2 gap-3">
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 1 }}>
                   <button onClick={() => handleDecision('APPROVED')} disabled={submitting}
-                    className="bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 text-white font-semibold py-3 rounded-lg transition-colors text-sm">
-                    ✅ Aprobar
+                    style={{ background: '#fff', color: '#000', padding: '14px', fontSize: 11, fontWeight: 600, letterSpacing: 2, textTransform: 'uppercase', border: 'none', cursor: 'pointer', fontFamily: "'DM Sans', sans-serif" }}>
+                    Aprobar
                   </button>
                   <button onClick={() => handleDecision('REJECTED')} disabled={submitting}
-                    className="bg-red-600 hover:bg-red-500 disabled:opacity-50 text-white font-semibold py-3 rounded-lg transition-colors text-sm">
-                    ❌ Rechazar
+                    style={{ background: 'transparent', color: '#606060', padding: '14px', fontSize: 11, fontWeight: 600, letterSpacing: 2, textTransform: 'uppercase', border: '1px solid #272727', cursor: 'pointer', fontFamily: "'DM Sans', sans-serif" }}>
+                    Rechazar
                   </button>
                 </div>
                 <button onClick={() => handleDecision('MORE_INFO')} disabled={submitting}
-                  className="w-full border border-slate-700 hover:border-slate-500 text-slate-300 font-semibold py-2 rounded-lg transition-colors text-sm">
+                  style={{ background: 'transparent', color: '#404040', padding: '12px', fontSize: 11, letterSpacing: 2, textTransform: 'uppercase', border: '1px solid #1A1A1A', cursor: 'pointer', fontFamily: "'DM Sans', sans-serif" }}>
                   Solicitar más información
                 </button>
               </div>
