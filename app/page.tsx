@@ -13,7 +13,7 @@ export default function Home() {
       <nav style={{ position: 'fixed', top: 0, left: 0, right: 0, zIndex: 200, height: 64, padding: '0 60px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: '#000', borderBottom: '1px solid #1A1A1A' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
           <div style={{ width: 32, height: 32, border: '1.5px solid #fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: "'Syne', sans-serif", fontWeight: 800, fontSize: 13, letterSpacing: 0.5 }}>SK</div>
-          <span style={{ fontFamily: "'Syne', sans-serif", fontWeight: 700, fontSize: 14, letterSpacing: 4, textTransform: 'uppercase' }}>Supply Chain</span>
+          <span style={{ fontFamily: "'Syne', sans-serif", fontWeight: 700, fontSize: 14, letterSpacing: 4, textTransform: 'uppercase' }}>Smart Kapital</span>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 36 }}>
           <Link href="/login" style={{ fontSize: 11, color: '#909090', textDecoration: 'none', letterSpacing: 1.5, textTransform: 'uppercase' }}>Sign In</Link>
