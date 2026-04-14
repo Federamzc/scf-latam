@@ -69,13 +69,12 @@ export default function DashboardPage() {
   return (
     <div style={{ minHeight: '100vh', background: '#F5F5F3', fontFamily: "'DM Sans', sans-serif", color: '#000' }}>
       <style>{`@import url('https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@300;400;500&display=swap');`}</style>
-
       <header style={{ borderBottom: '1px solid #E0E0E0', background: '#fff', position: 'sticky', top: 0, zIndex: 100 }}>
         <div style={{ maxWidth: 1200, margin: '0 auto', padding: '0 40px', height: 64, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-          <a href="/" style={{ display: 'flex', alignItems: 'center', gap: 12, textDecoration: 'none', color: 'inherit' }}>
+          <Link href="/" style={{ display: 'flex', alignItems: 'center', gap: 12, textDecoration: 'none', color: '#000' }}>
             <div style={{ width: 32, height: 32, border: '1.5px solid #000', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: "'Syne', sans-serif", fontWeight: 800, fontSize: 13 }}>SK</div>
-            <span style={{ fontFamily: "'Syne', sans-serif", fontWeight: 700, fontSize: 13, letterSpacing: 3, textTransform: 'uppercase' }}>Smart Kapital</span></a>
-          </div>
+            <span style={{ fontFamily: "'Syne', sans-serif", fontWeight: 700, fontSize: 13, letterSpacing: 3, textTransform: 'uppercase' }}>Smart Kapital</span>
+          </Link>
           <div style={{ display: 'flex', alignItems: 'center', gap: 24 }}>
             <span style={{ fontSize: 12, color: '#909090' }}>{profile?.company_name}</span>
             <span style={{ fontSize: 10, letterSpacing: 1.5, border: '1px solid #E0E0E0', color: '#909090', padding: '4px 10px', textTransform: 'uppercase' }}>{profile?.role}</span>
@@ -83,14 +82,11 @@ export default function DashboardPage() {
           </div>
         </div>
       </header>
-
       <main style={{ maxWidth: 1200, margin: '0 auto', padding: '60px 40px' }}>
         <div style={{ fontSize: 11, letterSpacing: 3, textTransform: 'uppercase', color: '#909090', marginBottom: 12 }}>Dashboard</div>
         <h1 style={{ fontFamily: "'Syne', sans-serif", fontSize: 32, fontWeight: 700, letterSpacing: -1, marginBottom: 48 }}>
           {isBanco ? 'Portal Banco' : isCorporativo ? 'Panel Corporativo' : 'Panel Proveedor'}
         </h1>
-
-        {/* Stats */}
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 1, background: '#E0E0E0', border: '1px solid #E0E0E0', marginBottom: 48 }}>
           {stats.map(s => (
             <div key={s.lbl} style={{ padding: '32px 28px', background: '#fff' }}>
@@ -99,11 +95,9 @@ export default function DashboardPage() {
             </div>
           ))}
         </div>
-
-        {/* Modules */}
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 1, background: '#E0E0E0', border: '1px solid #E0E0E0', marginBottom: 48 }}>
           {modules.map(m => (
-            <Link key={m.num} href={m.href} style={{ padding: '40px 36px', background: '#fff', textDecoration: 'none', color: '#000', display: 'block', transition: 'background 0.15s' }}>
+            <Link key={m.num} href={m.href} style={{ padding: '40px 36px', background: '#fff', textDecoration: 'none', color: '#000', display: 'block' }}>
               <div style={{ fontSize: 11, color: '#C0C0C0', letterSpacing: 2, textTransform: 'uppercase', marginBottom: 16, fontFamily: "'Syne', sans-serif" }}>{m.num} —</div>
               <div style={{ fontFamily: "'Syne', sans-serif", fontSize: 20, fontWeight: 700, letterSpacing: -0.5, marginBottom: 8 }}>{m.title}</div>
               <div style={{ fontSize: 13, color: '#909090', lineHeight: 1.7 }}>{m.desc}</div>
@@ -111,8 +105,6 @@ export default function DashboardPage() {
             </Link>
           ))}
         </div>
-
-        {/* Recent activity */}
         <div style={{ background: '#fff', border: '1px solid #E0E0E0' }}>
           <div style={{ padding: '24px 32px', borderBottom: '1px solid #E0E0E0', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <span style={{ fontSize: 11, letterSpacing: 2, textTransform: 'uppercase', color: '#909090' }}>Actividad reciente</span>
