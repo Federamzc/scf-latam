@@ -13,74 +13,71 @@ export default function RegisterPage() {
     setLoading(true)
     setError('')
     const { error } = await supabase.auth.signUp({
-      email: form.email,
-      password: form.password,
+      email: form.email, password: form.password,
       options: { data: { role: form.role, company_name: form.company_name } }
     })
-    if (error) {
-      setError(error.message)
-      setLoading(false)
-    } else {
-      window.location.href = window.location.origin + '/dashboard'
-    }
+    if (error) { setError(error.message); setLoading(false) }
+    else window.location.href = window.location.origin + '/dashboard'
   }
 
   return (
-    <div className="min-h-screen bg-slate-950 flex items-center justify-center p-4">
-      <div className="w-full max-w-md">
-        <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-white">Crear cuenta</h1>
-          <p className="text-slate-400 mt-2">Comenzá a usar SCF Latam hoy</p>
+    <div style={{ minHeight: '100vh', background: '#000', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24, fontFamily: "'DM Sans', sans-serif" }}>
+      <style>{`@import url('https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@300;400;500&display=swap');`}</style>
+      <div style={{ width: '100%', maxWidth: 440 }}>
+        <div style={{ textAlign: 'center', marginBottom: 48 }}>
+          <div style={{ width: 40, height: 40, border: '1.5px solid #fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: "'Syne', sans-serif", fontWeight: 800, fontSize: 14, margin: '0 auto 24px' }}>SK</div>
+          <h1 style={{ fontFamily: "'Syne', sans-serif", fontSize: 24, fontWeight: 700, color: '#fff', letterSpacing: -1, marginBottom: 8 }}>Request Access</h1>
+          <p style={{ fontSize: 13, color: '#606060' }}>Join SK's credit infrastructure platform</p>
         </div>
-        <form onSubmit={handleRegister} className="bg-slate-900 border border-slate-800 rounded-2xl p-8 space-y-5">
-          {error && (
-            <div className="bg-red-500/10 border border-red-500/30 text-red-400 rounded-lg px-4 py-3 text-sm">{error}</div>
-          )}
+
+        <form onSubmit={handleRegister} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+          {error && <div style={{ border: '1px solid #404040', color: '#909090', padding: '12px 16px', fontSize: 13 }}>{error}</div>}
+
           <div>
-            <label className="block text-slate-300 text-sm font-medium mb-3">Tipo de cuenta</label>
-            <div className="grid grid-cols-2 gap-3">
-              {['CORPORATIVO', 'PROVEEDOR'].map(role => (
-                <button key={role} type="button" onClick={() => setForm(f => ({ ...f, role }))}
-                  className={`py-3 px-4 rounded-lg border text-sm font-semibold transition-all ${
-                    form.role === role
-                      ? 'bg-blue-600 border-blue-500 text-white'
-                      : 'bg-slate-800 border-slate-700 text-slate-400 hover:border-slate-500'
-                  }`}>
-                  {role === 'CORPORATIVO' ? '🏢 Corporativo' : '🏭 Proveedor'}
+            <label style={{ display: 'block', fontSize: 11, letterSpacing: 1.5, textTransform: 'uppercase', color: '#606060', marginBottom: 8 }}>Account type</label>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 8 }}>
+              {[
+                { val: 'CORPORATIVO', label: 'Corporate' },
+                { val: 'PROVEEDOR', label: 'Supplier' },
+                { val: 'BANCO', label: 'Bank' },
+              ].map(r => (
+                <button key={r.val} type="button" onClick={() => setForm(f => ({ ...f, role: r.val }))}
+                  style={{ padding: '10px 8px', fontSize: 11, letterSpacing: 1, textTransform: 'uppercase', border: form.role === r.val ? '1px solid #fff' : '1px solid #272727', background: form.role === r.val ? '#fff' : 'transparent', color: form.role === r.val ? '#000' : '#606060', cursor: 'pointer', fontFamily: "'DM Sans', sans-serif" }}>
+                  {r.label}
                 </button>
               ))}
             </div>
-            <p className="text-slate-500 text-xs mt-2">
-              {form.role === 'CORPORATIVO'
-                ? 'Administrá tu red de proveedores y aprobá solicitudes'
-                : 'Accedé a financiamiento anticipado de tus facturas'}
-            </p>
           </div>
+
           <div>
-            <label className="block text-slate-300 text-sm font-medium mb-2">Nombre de empresa</label>
+            <label style={{ display: 'block', fontSize: 11, letterSpacing: 1.5, textTransform: 'uppercase', color: '#606060', marginBottom: 8 }}>Company name</label>
             <input type="text" required value={form.company_name} onChange={e => setForm(f => ({ ...f, company_name: e.target.value }))}
-              className="w-full bg-slate-800 border border-slate-700 rounded-lg px-4 py-3 text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 transition-colors"
-              placeholder="Mi Empresa S.A." />
+              style={{ width: '100%', background: '#0D0D0D', border: '1px solid #272727', color: '#fff', padding: '12px 16px', fontSize: 14, outline: 'none', fontFamily: "'DM Sans', sans-serif" }}
+              placeholder="Grupo Industrial S.A." />
           </div>
+
           <div>
-            <label className="block text-slate-300 text-sm font-medium mb-2">Email</label>
+            <label style={{ display: 'block', fontSize: 11, letterSpacing: 1.5, textTransform: 'uppercase', color: '#606060', marginBottom: 8 }}>Email</label>
             <input type="email" required value={form.email} onChange={e => setForm(f => ({ ...f, email: e.target.value }))}
-              className="w-full bg-slate-800 border border-slate-700 rounded-lg px-4 py-3 text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 transition-colors"
-              placeholder="tu@empresa.com" />
+              style={{ width: '100%', background: '#0D0D0D', border: '1px solid #272727', color: '#fff', padding: '12px 16px', fontSize: 14, outline: 'none', fontFamily: "'DM Sans', sans-serif" }}
+              placeholder="you@company.com" />
           </div>
+
           <div>
-            <label className="block text-slate-300 text-sm font-medium mb-2">Contraseña</label>
+            <label style={{ display: 'block', fontSize: 11, letterSpacing: 1.5, textTransform: 'uppercase', color: '#606060', marginBottom: 8 }}>Password</label>
             <input type="password" required minLength={6} value={form.password} onChange={e => setForm(f => ({ ...f, password: e.target.value }))}
-              className="w-full bg-slate-800 border border-slate-700 rounded-lg px-4 py-3 text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 transition-colors"
-              placeholder="Mínimo 6 caracteres" />
+              style={{ width: '100%', background: '#0D0D0D', border: '1px solid #272727', color: '#fff', padding: '12px 16px', fontSize: 14, outline: 'none', fontFamily: "'DM Sans', sans-serif" }}
+              placeholder="Min. 6 characters" />
           </div>
+
           <button type="submit" disabled={loading}
-            className="w-full bg-blue-600 hover:bg-blue-500 disabled:opacity-50 text-white font-semibold py-3 rounded-lg transition-colors">
-            {loading ? 'Creando cuenta...' : 'Crear cuenta'}
+            style={{ background: loading ? '#272727' : '#fff', color: '#000', padding: '14px', fontSize: 11, fontWeight: 600, letterSpacing: 2, textTransform: 'uppercase', border: 'none', cursor: 'pointer', marginTop: 8, fontFamily: "'DM Sans', sans-serif" }}>
+            {loading ? 'Creating account...' : 'Create Account'}
           </button>
-          <p className="text-center text-slate-500 text-sm">
-            ¿Ya tenés cuenta?{' '}
-            <Link href="/login" className="text-blue-400 hover:text-blue-300">Iniciá sesión</Link>
+
+          <p style={{ textAlign: 'center', fontSize: 12, color: '#606060', marginTop: 8 }}>
+            Already have access?{' '}
+            <Link href="/login" style={{ color: '#B8B8B8', textDecoration: 'none' }}>Sign in</Link>
           </p>
         </form>
       </div>
