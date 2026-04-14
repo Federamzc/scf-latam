@@ -29,9 +29,9 @@ export default function LoginPage() {
           <span style={{ fontFamily: "'Syne', sans-serif", fontWeight: 700, fontSize: 13, letterSpacing: 3, textTransform: 'uppercase', color: '#fff' }}>Supply Chain</span>
         </div>
         <div>
-          <p style={{ fontSize: 11, letterSpacing: 3, textTransform: 'uppercase', color: '#404040', marginBottom: 24 }}>Credit Infrastructure · LATAM</p>
-          <h2 style={{ fontFamily: "'Syne', sans-serif", fontSize: 36, fontWeight: 700, color: '#fff', letterSpacing: -1, lineHeight: 1.1, marginBottom: 24 }}>Capital moves<br/>when you decide.</h2>
-          <p style={{ fontSize: 13, color: '#606060', lineHeight: 1.8 }}>Infraestructura de crédito para LATAM. Conectá una vez. Desplegá en seis mercados.</p>
+          <p style={{ fontSize: 11, letterSpacing: 3, textTransform: 'uppercase', color: '#404040', marginBottom: 24 }}>SK Credit Infrastructure · of LATAM</p>
+          <h2 style={{ fontFamily: "'Syne', sans-serif", fontSize: 36, fontWeight: 700, color: '#fff', letterSpacing: -1, lineHeight: 1.1, marginBottom: 24 }}>Capital moves when you decide.</h2>
+          <p style={{ fontSize: 13, color: '#606060', lineHeight: 1.8 }}></p>
         </div>
         <div style={{ fontSize: 11, color: '#272727', letterSpacing: 1 }}>© 2026 SK. All rights reserved.</div>
       </div>
