@@ -50,7 +50,7 @@ export default function ScoringPage() {
       <style>{`@import url('https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@300;400;500&display=swap');`}</style>
       <header style={S.header}>
         <div style={S.headerInner}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+          <a href="/" style={{ display: 'flex', alignItems: 'center', gap: 12, textDecoration: 'none', color: 'inherit' }}>
             <div style={S.logoBox}>SK</div>
             <span style={{ fontFamily: "'Syne', sans-serif", fontWeight: 700, fontSize: 13, letterSpacing: 3, textTransform: 'uppercase' }}>Motor de Scoring</span>
           </div>
