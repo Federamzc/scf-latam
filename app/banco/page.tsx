@@ -7,7 +7,6 @@ const S = {
   page: { minHeight: '100vh', background: '#F5F5F3', fontFamily: "'DM Sans', sans-serif", color: '#000' },
   header: { borderBottom: '1px solid #E0E0E0', background: '#fff', position: 'sticky' as const, top: 0, zIndex: 100 },
   headerInner: { maxWidth: 1200, margin: '0 auto', padding: '0 40px', height: 64, display: 'flex', alignItems: 'center', justifyContent: 'space-between' },
-  logoBox: { width: 32, height: 32, border: '1.5px solid #000', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: "'Syne', sans-serif", fontWeight: 800, fontSize: 13 },
   main: { maxWidth: 1200, margin: '0 auto', padding: '60px 40px' },
   label: { display: 'block', fontSize: 11, letterSpacing: 1.5, textTransform: 'uppercase' as const, color: '#909090', marginBottom: 8 },
   input: { width: '100%', background: '#fff', border: '1px solid #E0E0E0', color: '#000', padding: '12px 16px', fontSize: 14, outline: 'none', fontFamily: "'DM Sans', sans-serif" },
@@ -63,42 +62,39 @@ export default function BancoPage() {
     setSubmitting(false)
   }
 
+  const getStatusBadge = (app: any) => {
+    if (!app.bank_decisions?.length) return { label: 'PENDIENTE', color: '#909090' }
+    const dec = app.bank_decisions[0].decision
+    if (dec === 'APPROVED') return { label: 'APROBADO', color: '#000' }
+    if (dec === 'REJECTED') return { label: 'RECHAZADO', color: '#C0C0C0' }
+    return { label: 'MAS INFO', color: '#606060' }
+  }
+
   if (loading) return (
     <div style={{ ...S.page, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
       <p style={{ fontSize: 11, letterSpacing: 3, textTransform: 'uppercase', color: '#909090' }}>Cargando...</p>
     </div>
   )
 
-  const getStatusBadge = (app: any) => {
-    if (!app.bank_decisions?.length) return { label: 'PENDIENTE', color: '#909090' }
-    const dec = app.bank_decisions[0].decision
-    if (dec === 'APPROVED') return { label: 'APROBADO', color: '#000' }
-    if (dec === 'REJECTED') return { label: 'RECHAZADO', color: '#C0C0C0' }
-    return { label: 'MÁS INFO', color: '#606060' }
-  }
-
   return (
     <div style={S.page}>
       <style>{`@import url('https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@300;400;500&display=swap');`}</style>
       <header style={S.header}>
         <div style={S.headerInner}>
-          <a href="/" style={{ display: 'flex', alignItems: 'center', gap: 12, textDecoration: 'none', color: 'inherit' }}>
-            <div style={S.logoBox}>SK</div>
-            <span style={{ fontFamily: "'Syne', sans-serif", fontWeight: 700, fontSize: 13, letterSpacing: 3, textTransform: 'uppercase' }}>Portal Banco</span>
-          </div>
+          <Link href="/" style={{ display: 'flex', alignItems: 'center', gap: 12, textDecoration: 'none', color: '#000' }}>
+            <div style={{ width: 32, height: 32, border: '1.5px solid #000', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: "'Syne', sans-serif", fontWeight: 800, fontSize: 13 }}>SK</div>
+            <span style={{ fontFamily: "'Syne', sans-serif", fontWeight: 700, fontSize: 13, letterSpacing: 3, textTransform: 'uppercase' }}>Smart Kapital</span>
+          </Link>
           <div style={{ display: 'flex', gap: 24 }}>
             <Link href="/scoring" style={{ fontSize: 11, color: '#909090', textDecoration: 'none', letterSpacing: 1.5, textTransform: 'uppercase' }}>Scoring</Link>
             <Link href="/dashboard" style={{ fontSize: 11, color: '#909090', textDecoration: 'none', letterSpacing: 1.5, textTransform: 'uppercase' }}>Dashboard</Link>
           </div>
         </div>
       </header>
-
       <main style={S.main}>
         <div style={{ fontSize: 11, letterSpacing: 3, textTransform: 'uppercase', color: '#909090', marginBottom: 12 }}>Sprint 2 — Decision Engine</div>
         <h1 style={{ fontFamily: "'Syne', sans-serif", fontSize: 32, fontWeight: 700, letterSpacing: -1, marginBottom: 8 }}>Portal de decisiones</h1>
-        <p style={{ fontSize: 14, color: '#909090', marginBottom: 48 }}>Revisá solicitudes, analizá el score y tomá decisiones de crédito</p>
-
-        {/* Stats */}
+        <p style={{ fontSize: 14, color: '#909090', marginBottom: 48 }}>Revisá solicitudes, analizá el score y tomá decisiones de credito</p>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 1, background: '#E0E0E0', border: '1px solid #E0E0E0', marginBottom: 48 }}>
           {[
             { val: stats.total, lbl: 'Total' },
@@ -113,15 +109,13 @@ export default function BancoPage() {
             </div>
           ))}
         </div>
-
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 1, background: '#E0E0E0', border: '1px solid #E0E0E0' }}>
-          {/* Pipeline */}
           <div style={S.card}>
             <div style={{ fontSize: 11, letterSpacing: 2, textTransform: 'uppercase', color: '#C0C0C0', marginBottom: 24, fontFamily: "'Syne', sans-serif" }}>01 — Pipeline</div>
             {applications.length === 0 ? (
               <div style={{ padding: '40px 0', textAlign: 'center' }}>
-                <p style={{ fontSize: 13, color: '#C0C0C0' }}>Sin solicitudes aún</p>
-                <Link href="/scoring" style={{ display: 'inline-block', marginTop: 16, fontSize: 11, letterSpacing: 1.5, textTransform: 'uppercase', color: '#000', textDecoration: 'none', border: '1px solid #000', padding: '10px 20px' }}>Crear solicitud →</Link>
+                <p style={{ fontSize: 13, color: '#C0C0C0' }}>Sin solicitudes aun</p>
+                <Link href="/scoring" style={{ display: 'inline-block', marginTop: 16, fontSize: 11, letterSpacing: 1.5, textTransform: 'uppercase', color: '#000', textDecoration: 'none', border: '1px solid #000', padding: '10px 20px' }}>Crear solicitud</Link>
               </div>
             ) : (
               <div>
@@ -152,13 +146,11 @@ export default function BancoPage() {
               </div>
             )}
           </div>
-
-          {/* Panel de decisión */}
           <div style={S.card}>
-            <div style={{ fontSize: 11, letterSpacing: 2, textTransform: 'uppercase', color: '#C0C0C0', marginBottom: 24, fontFamily: "'Syne', sans-serif" }}>02 — Decisión</div>
+            <div style={{ fontSize: 11, letterSpacing: 2, textTransform: 'uppercase', color: '#C0C0C0', marginBottom: 24, fontFamily: "'Syne', sans-serif" }}>02 — Decision</div>
             {!selected ? (
               <div style={{ padding: '80px 0', textAlign: 'center' }}>
-                <div style={{ fontSize: 11, letterSpacing: 3, textTransform: 'uppercase', color: '#E0E0E0' }}>Seleccioná una solicitud</div>
+                <div style={{ fontSize: 11, letterSpacing: 3, textTransform: 'uppercase', color: '#E0E0E0' }}>Selecciona una solicitud</div>
               </div>
             ) : (
               <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
@@ -166,7 +158,6 @@ export default function BancoPage() {
                   <h3 style={{ fontFamily: "'Syne', sans-serif", fontSize: 20, fontWeight: 700, letterSpacing: -0.5, marginBottom: 4 }}>{selected.company_name}</h3>
                   <p style={{ fontSize: 12, color: '#909090' }}>{selected.tax_id} · ${Number(selected.requested_amount).toLocaleString()} solicitados</p>
                 </div>
-
                 {selected.scoring_results?.[0] && (
                   <div style={{ border: '1px solid #E0E0E0', padding: 24 }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
@@ -177,7 +168,7 @@ export default function BancoPage() {
                       { label: 'Ingresos vs monto', score: selected.scoring_results[0].revenue_score, max: 40 },
                       { label: 'Ratio deuda', score: selected.scoring_results[0].debt_ratio_score, max: 25 },
                       { label: 'Historial pagos', score: selected.scoring_results[0].payment_history_score, max: 25 },
-                      { label: 'Años operación', score: selected.scoring_results[0].seniority_score, max: 10 },
+                      { label: 'Anos operacion', score: selected.scoring_results[0].seniority_score, max: 10 },
                     ].map(item => (
                       <div key={item.label} style={{ marginBottom: 12 }}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11, marginBottom: 6 }}>
@@ -191,7 +182,6 @@ export default function BancoPage() {
                     ))}
                   </div>
                 )}
-
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
                     <div><label style={S.label}>Monto aprobado (USD)</label><input type="number" value={decision.approved_amount} onChange={e => setDecision(d => ({ ...d, approved_amount: e.target.value }))} placeholder={selected.requested_amount} style={S.input} /></div>
@@ -200,7 +190,6 @@ export default function BancoPage() {
                   <div><label style={S.label}>Plazo (meses)</label><input type="number" value={decision.term_months} onChange={e => setDecision(d => ({ ...d, term_months: e.target.value }))} placeholder="12" style={S.input} /></div>
                   <div><label style={S.label}>Notas internas</label><textarea value={decision.notes} onChange={e => setDecision(d => ({ ...d, notes: e.target.value }))} placeholder="Observaciones..." rows={3} style={{ ...S.input, resize: 'none' }} /></div>
                 </div>
-
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
                   <button onClick={() => handleDecision('APPROVED')} disabled={submitting}
                     style={{ background: '#000', color: '#fff', padding: '14px', fontSize: 11, fontWeight: 600, letterSpacing: 2, textTransform: 'uppercase', border: 'none', cursor: 'pointer', fontFamily: "'DM Sans', sans-serif" }}>
@@ -213,7 +202,7 @@ export default function BancoPage() {
                 </div>
                 <button onClick={() => handleDecision('MORE_INFO')} disabled={submitting}
                   style={{ background: '#fff', color: '#C0C0C0', padding: '12px', fontSize: 11, letterSpacing: 2, textTransform: 'uppercase', border: '1px solid #E0E0E0', cursor: 'pointer', fontFamily: "'DM Sans', sans-serif" }}>
-                  Solicitar más información
+                  Solicitar mas informacion
                 </button>
               </div>
             )}
