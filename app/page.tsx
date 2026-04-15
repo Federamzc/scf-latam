@@ -1,5 +1,7 @@
-import { redirect } from 'next/navigation'
-
 export default function Home() {
-  redirect('/landing.html')
+  return (
+    <script dangerouslySetInnerHTML={{
+      __html: `window.location.replace('/index.html')`
+    }} />
+  )
 }
