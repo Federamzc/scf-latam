@@ -4,27 +4,72 @@
 
 @import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap');
 
-:root {
-  --black: #000000;
-  --white: #FFFFFF;
-  --g1: #0D0D0D;
-  --g2: #1A1A1A;
-  --g3: #272727;
-  --g4: #404040;
-  --g5: #606060;
-  --g6: #909090;
-  --g7: #B8B8B8;
-  --g8: #D8D8D8;
-}
-
 * { box-sizing: border-box; }
 
 body {
-  background: var(--black);
-  color: var(--white);
+  background: #F5F5F3;
+  color: #000;
   font-family: 'DM Sans', sans-serif;
-  font-size: 16px;
-  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
 }
 
-.sk-font { font-family: 'Syne', sans-serif; }
+/* Responsive helpers */
+@media (max-width: 768px) {
+  /* Headers */
+  header > div {
+    padding: 0 20px !important;
+  }
+  
+  /* Main content */
+  main {
+    padding: 32px 20px !important;
+  }
+
+  /* Grids de 2 columnas → 1 columna */
+  [style*="grid-template-columns: 1fr 1fr"],
+  [style*="gridTemplateColumns: '1fr 1fr'"] {
+    grid-template-columns: 1fr !important;
+  }
+
+  /* Grids de 4 columnas → 2 columnas */
+  [style*="grid-template-columns: repeat(4"],
+  [style*="gridTemplateColumns: 'repeat(4"] {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+
+  /* Grids de 5 columnas → 2 columnas */
+  [style*="grid-template-columns: repeat(5"],
+  [style*="gridTemplateColumns: 'repeat(5"] {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+
+  /* Panels laterales en login/register */
+  [style*="width: 480px"] {
+    width: 100% !important;
+    padding: 32px 24px !important;
+    min-height: auto !important;
+  }
+
+  /* Sidebar de docs */
+  aside[style*="width: 280px"] {
+    display: none !important;
+  }
+
+  /* Tablas → scroll horizontal */
+  table {
+    font-size: 12px !important;
+  }
+
+  td, th {
+    padding: 10px 16px !important;
+  }
+
+  /* Textos grandes */
+  h1[style*="font-size: 32px"] {
+    font-size: 24px !important;
+  }
+
+  h1[style*="font-size: 28px"] {
+    font-size: 22px !important;
+  }
+}
