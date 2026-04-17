@@ -27,85 +27,79 @@ export default function FacturasPage() {
   }
 
   if (loading) return (
-    <div className="min-h-screen bg-slate-950 flex items-center justify-center">
-      <p className="text-white">Cargando...</p>
+    <div style={{ minHeight: '100vh', background: '#F5F5F3', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: "'DM Sans', sans-serif" }}>
+      <p style={{ fontSize: 11, letterSpacing: 3, textTransform: 'uppercase', color: '#909090' }}>Cargando...</p>
     </div>
   )
 
   const isCorporativo = profile?.role === 'CORPORATIVO'
 
   return (
-    <div className="min-h-screen bg-slate-950">
-      <header className="border-b border-slate-800 bg-slate-900">
-        <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
-          <Link href="/dashboard" className="text-slate-400 hover:text-white text-sm transition-colors">← Dashboard</Link>
-          <h1 className="text-white font-semibold">{isCorporativo ? 'Facturas para aprobar' : 'Mis facturas'}</h1>
-          {!isCorporativo && (
-            <Link href="/facturas/nueva" className="bg-blue-600 hover:bg-blue-500 text-white text-sm font-semibold px-4 py-2 rounded-lg transition-colors">
-              + Nueva
-            </Link>
-          )}
+    <div style={{ minHeight: '100vh', background: '#F5F5F3', fontFamily: "'DM Sans', sans-serif", color: '#000' }}>
+      <style>{`@import url('https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@300;400;500&display=swap');`}</style>
+
+      <header style={{ borderBottom: '1px solid #E0E0E0', background: '#fff', position: 'sticky', top: 0, zIndex: 100 }}>
+        <div style={{ maxWidth: 1200, margin: '0 auto', padding: '0 40px', height: 64, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <Link href="/" style={{ display: 'flex', alignItems: 'center', gap: 12, textDecoration: 'none', color: '#000' }}>
+            <div style={{ width: 32, height: 32, border: '1.5px solid #000', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: "'Syne', sans-serif", fontWeight: 800, fontSize: 13 }}>SK</div>
+            <span style={{ fontFamily: "'Syne', sans-serif", fontWeight: 700, fontSize: 13, letterSpacing: 3, textTransform: 'uppercase' }}>Smart Kapital</span>
+          </Link>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 24 }}>
+            <Link href="/dashboard" style={{ fontSize: 11, color: '#909090', textDecoration: 'none', letterSpacing: 1.5, textTransform: 'uppercase' }}>Dashboard</Link>
+            {!isCorporativo && (
+              <Link href="/facturas/nueva" style={{ background: '#000', color: '#fff', padding: '8px 20px', fontSize: 11, fontWeight: 600, letterSpacing: 2, textTransform: 'uppercase', textDecoration: 'none' }}>+ Nueva factura</Link>
+            )}
+          </div>
         </div>
       </header>
 
-      <main className="max-w-7xl mx-auto px-6 py-10">
+      <main style={{ maxWidth: 1200, margin: '0 auto', padding: '60px 40px' }}>
+        <div style={{ fontSize: 11, letterSpacing: 3, textTransform: 'uppercase', color: '#909090', marginBottom: 12 }}>
+          {isCorporativo ? 'Facturas para aprobar' : 'Mis facturas'}
+        </div>
+        <h1 style={{ fontFamily: "'Syne', sans-serif", fontSize: 32, fontWeight: 700, letterSpacing: -1, marginBottom: 48 }}>
+          {isCorporativo ? 'Pipeline de facturas' : 'Mis facturas'}
+        </h1>
+
         {facturas.length === 0 ? (
-          <div className="text-center py-20">
-            <p className="text-4xl mb-3">📄</p>
-            <p className="text-slate-400">No hay facturas aún</p>
+          <div style={{ background: '#fff', border: '1px solid #E0E0E0', padding: '80px 40px', textAlign: 'center' }}>
+            <p style={{ fontSize: 13, color: '#C0C0C0', marginBottom: 24 }}>No hay facturas aún</p>
             {!isCorporativo && (
-              <Link href="/facturas/nueva" className="inline-block mt-4 bg-blue-600 text-white font-semibold px-6 py-2 rounded-lg text-sm">
+              <Link href="/facturas/nueva" style={{ display: 'inline-block', background: '#000', color: '#fff', padding: '12px 32px', fontSize: 11, fontWeight: 600, letterSpacing: 2, textTransform: 'uppercase', textDecoration: 'none' }}>
                 Cargar primera factura
               </Link>
             )}
           </div>
         ) : (
-          <div className="space-y-4">
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 1, background: '#E0E0E0', border: '1px solid #E0E0E0' }}>
             {facturas.map(f => (
-              <div key={f.id} className="bg-slate-900 border border-slate-800 rounded-xl p-6">
-                <div className="flex items-start justify-between">
-                  <div className="flex-1">
-                    <div className="flex items-center gap-3 mb-2">
-                      <p className="text-white font-semibold">{f.numero_factura}</p>
-                      <span className={`text-xs px-2 py-0.5 rounded-full ${
-                        f.estado === 'PENDIENTE' ? 'bg-amber-500/20 text-amber-300' :
-                        f.estado === 'APROBADA' ? 'bg-emerald-500/20 text-emerald-300' :
-                        f.estado === 'RECHAZADA' ? 'bg-red-500/20 text-red-300' :
-                        'bg-blue-500/20 text-blue-300'
-                      }`}>{f.estado}</span>
-                    </div>
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
-                      <div>
-                        <p className="text-slate-500 text-xs">Emisor</p>
-                        <p className="text-slate-300">{f.emisor}</p>
-                      </div>
-                      <div>
-                        <p className="text-slate-500 text-xs">Receptor</p>
-                        <p className="text-slate-300">{f.receptor}</p>
-                      </div>
-                      <div>
-                        <p className="text-slate-500 text-xs">Monto</p>
-                        <p className="text-white font-semibold">{f.moneda} {Number(f.monto).toLocaleString()}</p>
-                      </div>
-                      <div>
-                        <p className="text-slate-500 text-xs">Fecha emisión</p>
-                        <p className="text-slate-300">{f.fecha_emision || 'N/A'}</p>
-                      </div>
-                    </div>
+              <div key={f.id} style={{ background: '#fff', padding: '28px 32px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                <div style={{ flex: 1 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 8 }}>
+                    <p style={{ fontFamily: "'Syne', sans-serif", fontSize: 16, fontWeight: 700, letterSpacing: -0.5 }}>{f.numero_factura}</p>
+                    <span style={{ fontSize: 10, letterSpacing: 1.5, textTransform: 'uppercase', border: '1px solid #E0E0E0', padding: '3px 8px', color: f.estado === 'PENDIENTE' ? '#909090' : f.estado === 'APROBADA' ? '#000' : '#C0C0C0' }}>
+                      {f.estado}
+                    </span>
                   </div>
-                  {isCorporativo && f.estado === 'PENDIENTE' && (
-                    <div className="flex gap-2 ml-4">
-                      <button onClick={() => cambiarEstado(f.id, 'APROBADA')}
-                        className="bg-emerald-600 hover:bg-emerald-500 text-white text-sm font-semibold px-4 py-2 rounded-lg transition-colors">
-                        Aprobar
-                      </button>
-                      <button onClick={() => cambiarEstado(f.id, 'RECHAZADA')}
-                        className="bg-red-600 hover:bg-red-500 text-white text-sm font-semibold px-4 py-2 rounded-lg transition-colors">
-                        Rechazar
-                      </button>
-                    </div>
-                  )}
+                  <div style={{ display: 'flex', gap: 32, fontSize: 13, color: '#909090' }}>
+                    <span>{f.emisor}</span>
+                    <span>→ {f.receptor}</span>
+                    <span style={{ fontFamily: 'monospace', color: '#000', fontWeight: 500 }}>{f.moneda} {Number(f.monto).toLocaleString()}</span>
+                    <span>{f.fecha_emision || 'Sin fecha'}</span>
+                  </div>
                 </div>
+                {isCorporativo && f.estado === 'PENDIENTE' && (
+                  <div style={{ display: 'flex', gap: 8, marginLeft: 32 }}>
+                    <button onClick={() => cambiarEstado(f.id, 'APROBADA')}
+                      style={{ background: '#000', color: '#fff', padding: '10px 20px', fontSize: 11, fontWeight: 600, letterSpacing: 2, textTransform: 'uppercase', border: 'none', cursor: 'pointer', fontFamily: "'DM Sans', sans-serif" }}>
+                      Aprobar
+                    </button>
+                    <button onClick={() => cambiarEstado(f.id, 'RECHAZADA')}
+                      style={{ background: '#fff', color: '#909090', padding: '10px 20px', fontSize: 11, fontWeight: 600, letterSpacing: 2, textTransform: 'uppercase', border: '1px solid #E0E0E0', cursor: 'pointer', fontFamily: "'DM Sans', sans-serif" }}>
+                      Rechazar
+                    </button>
+                  </div>
+                )}
               </div>
             ))}
           </div>

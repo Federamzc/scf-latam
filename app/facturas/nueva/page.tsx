@@ -9,35 +9,24 @@ export default function NuevaFactura() {
   const [error, setError] = useState('')
   const [success, setSuccess] = useState(false)
   const [datos, setDatos] = useState<any>(null)
-  const [debug, setDebug] = useState('')
 
   async function handleUpload(e: React.FormEvent) {
     e.preventDefault()
     if (!file) return
     setLoading(true)
     setError('')
-    setDebug('')
 
     try {
-      setDebug('Verificando usuario...')
-      const { data: { user }, error: userError } = await supabase.auth.getUser()
-      if (userError) throw new Error('Error auth: ' + userError.message)
+      const { data: { user } } = await supabase.auth.getUser()
       if (!user) throw new Error('No autenticado')
-      setDebug('Usuario OK: ' + user.id)
-
       const texto = await file.text()
-      setDebug(prev => prev + '\nArchivo leido OK')
-
       const response = await fetch('/api/extraer-factura', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ contenido: texto, tipo: file.type, nombre: file.name })
       })
-
-      if (!response.ok) throw new Error('Error Gemini: ' + response.status)
+      if (!response.ok) throw new Error('Error al procesar con IA')
       const datosExtraidos = await response.json()
-      setDebug(prev => prev + '\nGemini OK')
-
       const { error: dbError } = await supabase.from('facturas').insert({
         proveedor_id: user.id,
         numero_factura: datosExtraidos.numero_factura || 'N/A',
@@ -49,30 +38,51 @@ export default function NuevaFactura() {
         fecha_vencimiento: datosExtraidos.fecha_vencimiento || null,
         pais: datosExtraidos.pais || 'N/A',
         tipo_archivo: file.type,
+        datos_extraidos: datosExtraidos,
         estado: 'PENDIENTE'
       })
-
-      if (dbError) throw new Error('Error DB: ' + JSON.stringify(dbError))
-      setDebug(prev => prev + '\nDB OK')
+      if (dbError) throw new Error(dbError.message)
       setDatos(datosExtraidos)
       setSuccess(true)
     } catch (err: any) {
-      setError(err.message)
+      setError(err.message || 'Error al procesar la factura')
     } finally {
       setLoading(false)
     }
   }
 
-  if (success) {
+  if (success && datos) {
     return (
-      <div className="min-h-screen bg-slate-950 flex items-center justify-center p-4">
-        <div className="w-full max-w-lg">
-          <div className="bg-slate-900 border border-emerald-500/30 rounded-2xl p-8 text-center">
-            <div className="text-5xl mb-3">✅</div>
-            <h2 className="text-2xl font-bold text-white">Factura cargada</h2>
-            <Link href="/dashboard" className="block mt-6 bg-blue-600 text-white font-semibold py-3 rounded-lg">
-              Ir al dashboard
-            </Link>
+      <div style={{ minHeight: '100vh', background: '#F5F5F3', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: "'DM Sans', sans-serif" }}>
+        <style>{`@import url('https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@300;400;500&display=swap');`}</style>
+        <div style={{ width: '100%', maxWidth: 520 }}>
+          <div style={{ background: '#fff', border: '1px solid #E0E0E0', padding: 48 }}>
+            <div style={{ fontSize: 11, letterSpacing: 3, textTransform: 'uppercase', color: '#909090', marginBottom: 16 }}>Factura procesada</div>
+            <h2 style={{ fontFamily: "'Syne', sans-serif", fontSize: 28, fontWeight: 700, letterSpacing: -1, marginBottom: 32 }}>Cargada con éxito</h2>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 1, background: '#E0E0E0', marginBottom: 32 }}>
+              {[
+                { label: 'N° Factura', value: datos.numero_factura },
+                { label: 'Emisor', value: datos.emisor },
+                { label: 'Receptor', value: datos.receptor },
+                { label: 'Monto', value: `${datos.moneda} ${Number(datos.monto).toLocaleString()}` },
+                { label: 'Fecha emisión', value: datos.fecha_emision },
+                { label: 'País', value: datos.pais },
+              ].filter(i => i.value).map(item => (
+                <div key={item.label} style={{ background: '#fff', padding: '16px 24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <span style={{ fontSize: 11, letterSpacing: 1, textTransform: 'uppercase', color: '#909090' }}>{item.label}</span>
+                  <span style={{ fontSize: 14, fontWeight: 500, fontFamily: item.label === 'Monto' ? 'monospace' : 'inherit' }}>{item.value}</span>
+                </div>
+              ))}
+            </div>
+            <div style={{ display: 'flex', gap: 8 }}>
+              <Link href="/dashboard" style={{ flex: 1, background: '#000', color: '#fff', padding: '14px', fontSize: 11, fontWeight: 600, letterSpacing: 2, textTransform: 'uppercase', textDecoration: 'none', textAlign: 'center' }}>
+                Ir al dashboard
+              </Link>
+              <button onClick={() => { setSuccess(false); setFile(null); setDatos(null) }}
+                style={{ flex: 1, background: '#fff', color: '#909090', padding: '14px', fontSize: 11, letterSpacing: 2, textTransform: 'uppercase', border: '1px solid #E0E0E0', cursor: 'pointer', fontFamily: "'DM Sans', sans-serif" }}>
+                Cargar otra
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -80,41 +90,52 @@ export default function NuevaFactura() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-950 flex items-center justify-center p-4">
-      <div className="w-full max-w-lg">
-        <div className="text-center mb-8">
-          <Link href="/dashboard" className="text-slate-500 hover:text-slate-300 text-sm">Volver</Link>
-          <h1 className="text-3xl font-bold text-white mt-4">Cargar factura</h1>
+    <div style={{ minHeight: '100vh', background: '#F5F5F3', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: "'DM Sans', sans-serif" }}>
+      <style>{`@import url('https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@300;400;500&display=swap');`}</style>
+      <div style={{ width: '100%', maxWidth: 520 }}>
+        <div style={{ marginBottom: 32, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <Link href="/" style={{ display: 'flex', alignItems: 'center', gap: 12, textDecoration: 'none', color: '#000' }}>
+            <div style={{ width: 32, height: 32, border: '1.5px solid #000', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: "'Syne', sans-serif", fontWeight: 800, fontSize: 13 }}>SK</div>
+            <span style={{ fontFamily: "'Syne', sans-serif", fontWeight: 700, fontSize: 13, letterSpacing: 3, textTransform: 'uppercase' }}>Smart Kapital</span>
+          </Link>
+          <Link href="/dashboard" style={{ fontSize: 11, color: '#909090', textDecoration: 'none', letterSpacing: 1.5, textTransform: 'uppercase' }}>← Dashboard</Link>
         </div>
-        <form onSubmit={handleUpload} className="bg-slate-900 border border-slate-800 rounded-2xl p-8 space-y-6">
-          {error && (
-            <div className="bg-red-500/10 border border-red-500/30 text-red-400 rounded-lg px-4 py-3 text-sm">{error}</div>
-          )}
-          {debug && (
-            <div className="bg-slate-800 rounded-lg px-4 py-3 text-xs text-slate-300 whitespace-pre-wrap">{debug}</div>
-          )}
-          <div onClick={() => document.getElementById('file-input')?.click()}
-            className={`border-2 border-dashed rounded-xl p-10 text-center cursor-pointer transition-colors ${file ? 'border-blue-500 bg-blue-500/5' : 'border-slate-700 hover:border-slate-500'}`}>
-            <input id="file-input" type="file" accept=".xml,.pdf,.json" className="hidden"
-              onChange={e => setFile(e.target.files?.[0] || null)} />
-            {file ? (
-              <div>
-                <div className="text-4xl mb-3">📄</div>
-                <p className="text-white font-medium">{file.name}</p>
-              </div>
-            ) : (
-              <div>
-                <div className="text-4xl mb-3">📤</div>
-                <p className="text-white font-medium">Clic para subir</p>
-                <p className="text-slate-400 text-sm mt-2">XML, PDF o JSON</p>
-              </div>
+
+        <div style={{ background: '#fff', border: '1px solid #E0E0E0', padding: 48 }}>
+          <div style={{ fontSize: 11, letterSpacing: 3, textTransform: 'uppercase', color: '#909090', marginBottom: 16 }}>Proveedor</div>
+          <h1 style={{ fontFamily: "'Syne', sans-serif", fontSize: 28, fontWeight: 700, letterSpacing: -1, marginBottom: 8 }}>Cargar factura</h1>
+          <p style={{ fontSize: 13, color: '#909090', marginBottom: 40 }}>XML, PDF o JSON · México y Costa Rica · IA extrae los datos automáticamente</p>
+
+          <form onSubmit={handleUpload} style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
+            {error && (
+              <div style={{ background: '#FFF5F5', border: '1px solid #FFE0E0', color: '#CC0000', padding: '12px 16px', fontSize: 13 }}>{error}</div>
             )}
-          </div>
-          <button type="submit" disabled={!file || loading}
-            className="w-full bg-blue-600 hover:bg-blue-500 disabled:opacity-50 text-white font-semibold py-3 rounded-lg transition-colors">
-            {loading ? 'Procesando...' : 'Procesar factura'}
-          </button>
-        </form>
+
+            <div
+              onClick={() => document.getElementById('file-input')?.click()}
+              style={{ border: `1.5px dashed ${file ? '#000' : '#E0E0E0'}`, padding: '48px 32px', textAlign: 'center', cursor: 'pointer', background: file ? '#F5F5F3' : '#fff', transition: 'all 0.15s' }}>
+              <input id="file-input" type="file" accept=".xml,.pdf,.json" className="hidden" style={{ display: 'none' }}
+                onChange={e => setFile(e.target.files?.[0] || null)} />
+              {file ? (
+                <div>
+                  <p style={{ fontFamily: "'Syne', sans-serif", fontSize: 16, fontWeight: 700, marginBottom: 4 }}>{file.name}</p>
+                  <p style={{ fontSize: 12, color: '#909090' }}>{(file.size / 1024).toFixed(1)} KB</p>
+                </div>
+              ) : (
+                <div>
+                  <p style={{ fontSize: 11, letterSpacing: 2, textTransform: 'uppercase', color: '#C0C0C0', marginBottom: 8 }}>Subir archivo</p>
+                  <p style={{ fontSize: 13, color: '#909090' }}>Hacé clic o arrastrá tu factura aquí</p>
+                  <p style={{ fontSize: 11, color: '#C0C0C0', marginTop: 8 }}>XML · PDF · JSON</p>
+                </div>
+              )}
+            </div>
+
+            <button type="submit" disabled={!file || loading}
+              style={{ background: !file || loading ? '#E0E0E0' : '#000', color: !file || loading ? '#909090' : '#fff', padding: '14px', fontSize: 11, fontWeight: 600, letterSpacing: 2, textTransform: 'uppercase', border: 'none', cursor: !file || loading ? 'not-allowed' : 'pointer', fontFamily: "'DM Sans', sans-serif" }}>
+              {loading ? 'Procesando con IA...' : 'Procesar factura'}
+            </button>
+          </form>
+        </div>
       </div>
     </div>
   )
